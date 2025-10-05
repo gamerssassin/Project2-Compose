@@ -30,14 +30,14 @@ services:
       - jenkins
     ports:
       - "8080:8080"                      # Jenkins UI
-      - "50000:50000"                   # Jenkins agent
+      # - "50000:50000"                   # Jenkins agent (not used here)
     volumes:
       - docker-certs-client:/certs/client:ro # Jenkins reads TLS client certs
       - jenkins-data:/var/jenkins_home       # Jenkins data shared with DinD
       - /usr/bin/docker:/usr/bin/docker      # docker CLI in the Jenkins container
     restart: unless-stopped                # Enforced reboot policy
 
-# Network shared by both services for communication (Started via terminal command)
+# Network shared by both services for communication 
 networks:
   jenkins:
 
