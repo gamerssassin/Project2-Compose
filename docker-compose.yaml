@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  dind:
+    image: docker:dind
+    container_name: dind
+    privileged: true             # AS required for DinD and requested in document for Assignment 02.
+    networks:
+      jenkins:
+        aliases:
+          - docker                   # Jenkins reaches DinD at host "docker" alias
+    environment:
+      - DOCKER_TLS_CERTDIR=/certs    # enable TLS (per Additional doc provided)
+    volumes:
+      - docker-certs-ca:/certs/ca
+      - docker-certs-client:/certs/client
+      - jenkins-data:/var/jenkins_home       # Jenkins data shared with DinD
+      - docker-lib:/var/lib/docker           # Docker image layers shared with Jenkins
+    restart: unless-stopped                 # Enforced reboot policy
+
+  jenkins:
+    image: jenkins/jenkins:lts-jdk11
+    container_name: jenkins
+    user: root                               # Escalated privileges for Docker CLI access
+    environment:
+      - DOCKER_HOST=tcp://docker:2376        # points to DinD service
+      - DOCKER_CERT_PATH=/certs/client       # TLS client certs path
+      - DOCKER_TLS_VERIFY=1                  # Enforced TLS verification 
+    networks:
+      - jenkins
+    ports:
+      - "8080:8080"                      # Jenkins UI
+      - "50000:50000"                   # Jenkins agent
+    volumes:
+      - docker-certs-client:/certs/client:ro # Jenkins reads TLS client certs
+      - jenkins-data:/var/jenkins_home       # Jenkins data shared with DinD
+      - /usr/bin/docker:/usr/bin/docker      # docker CLI in the Jenkins container
+    restart: unless-stopped                # Enforced reboot policy
+
+# Network shared by both services for communication (Started via terminal command)
+networks:
+  jenkins:
+
+volumes:
+  jenkins-data: # Jenkins data
+  docker-certs-ca: # Docker CA certs
+  docker-certs-client: # Docker client certs
+  docker-lib: # Docker image layers
