@@ -29,8 +29,8 @@ services:
     networks:
       - jenkins
     ports:
-      - "8080:8080"                      # Jenkins UI
-      # - "50000:50000"                   # Jenkins agent (not used here)
+      - "8080:8080"                      # Jenkins web interface tomcat port
+      - "50000:50000"                   # Jenkins master-slave communication port
     volumes:
       - docker-certs-client:/certs/client:ro # Jenkins reads TLS client certs
       - jenkins-data:/var/jenkins_home       # Jenkins data shared with DinD
